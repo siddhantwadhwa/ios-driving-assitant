@@ -1,6 +1,5 @@
-# ios-driving-assitant app#
+# Local Binary Feature based image alignment app #
 
-**Title** : Driving Assistant
 
 **Summary** :
 Initially, I had set out to build a Driving assistant app that could be run on iOS devices mounted as dashboard cameras facing the front of the car, to offer safety warnings such as when the driver is not maintaining a safe distance with the car in front, or if the car is veering outside the lane. Exploring the various image alignement techniques, I realized that most conventional image represenations are ill-suited to execution on mobile devices. So instead, I decided to pivot to working on this technical challenge of implementing a fast, mobile-friendly and efficient image tracking application.
