@@ -1,57 +1,33 @@
-# ios-driving-assitant app#
+# Local Binary Feature based image alignment app #
 
-**Title** : Driving Assistant
 
 **Summary** :
-iOS app that allows for your iPhone to be mounted as a dash cam and serve as a driving assistant that serves the following functions :
-- Issues alerts if the vehicle is not maintaining appropriate distance from the vehicles in front
-- Issues a braking alert if the app predicts an impending collision
+Initially, I had set out to build a Driving assistant app that could be run on iOS devices mounted as dashboard cameras facing the front of the car, to offer safety warnings such as when the driver is not maintaining a safe distance with the car in front, or if the car is veering outside the lane. Exploring the various image alignement techniques, I realized that most conventional image represenations are ill-suited to execution on mobile devices. So instead, I decided to pivot to working on this technical challenge of implementing a fast, mobile-friendly and efficient image tracking application.
+
+I started working with Hatem Alismail, of the Robotics Institute at Carnegie Mellon University, to build a prototype application that made use of BitPlanes[1], a framework that Hatem was authoring (along with Brett Browning and Simon Lucey, also of the Robotics Institute) . Bitplanes was just the right fit for my driving assistant app-like ideas: a fast and robust image alignment framework well suited to the constraints of mobile devices.
 
 
 **Background** : 
-- The app takes advantage of the 240fps high speed cameras that the new range of iOS devices come equipped with.
-- The following features require certain speedups to operate at 240fps:
-  - Lane detection : BRIEF based Lukas Kanade algorithm for tracking. This mode is only activated when  that the vehicle is moving at a high speed, such as on highways.
-  - Distance to vehicle(in front) warnings : Requires use of a car detector to provide an initial template for BRIEF based tracking. An approximate guess of the dimensions of the vehicle in front will need to be made in order to estimate the distance to it.
+As described in “Bit-Planes: Dense Subpixel Alignment of Binary Descriptors.”[1], the bitplanes framework uses a descriptor called bit-planes, which is an adaptation of the simplest binary descriptor : LBP[2] descriptor (explained in Figure 1). The bit-planes descriptor is designed to work with the Lukas Kanade tracking algorithm to minimize the least squares distance between the template and the input image.
 
-**Challenges**:
+The framework is founded on the observation that binary features, despite being inherently discontinuous, are suitable for linearization followed by gradient-based optimization.[1]. Besides space and time efficiency, the other obvious benefit of the bitplanes descriptor is its robustness to geometric and photomoetric variance.
 
-- The meat of the idea relies on implementing Lukas Kanade tracking algorithm at exteremely high frame rates.
-- To add to the challenge, the app must run real time on the mobile device.
-- To achieve these goals, the app must use highly efficient feauture descriptors to run Lukas Kanade on.
-- In order to predict impending collisions, the app must use GPS data to calculate the current speed of the vehicle and use it in a collision simulation model that takes the vehicle speed and distance from the vehicle in front as input and calculates the probability of an impending head-on collision.
+While using bit-planes as a descriptor allows me to optimize my app’s performance on an algorithmic level, the framework is also designed to make use of SIMD and NEON instructions, that further improve the performance of the app on the architectural level.
 
-**Goals and Deliverables**:
+**Results**:
+Initially I used the OpenCV cvPhotoCamera class to query for live frames, however, I later rewrote the entire app to use AVFoundation’s custom CaptureSession class as it yielded performance benefits and are also better support for the high frame rate features that I plan to add in the future.
 
-- Plan to achieve to build an app that is able to reasonably estimate the distance to the vehicle in front and make suggestion to the driver to slow down if necessary. The app needs to run real time, at a decently high camera resolution and frame rate to track vehicles at high speeds.
-- In case I do achieve the above goal before the December 11 deadline, then I hope to add a lane and stop sign detection feature to the appas well.
-- Also, over the winter break, I hope to collaborate with hardware-specialists to build a device that plugs into the OBD port found in all cars to transmit the state of the car (speed, braking force, etc.) directly from the car's ECU to the app in order to improve the quality of collision predictions.
-- Through this app, I hope to make a driving assistant that reduces the probability of road accidents.
+My application successfully makes use of the Bitplanes framework for image alignment at frame rates as high as 120fps on the iPad Air 2. In Figure 3 you can see the basic user interface of the app that allows the user to select a template in the live view-frame using a resizeable bounding box. Once the template is set, the application begins to track the template in real time, overlaying the estimated homography onto the live view.
 
-**Schedule**:
-<table class="tg">
-  <tr>
-    <th class="tg-yw4l">Week Ending</th>
-    <th class="tg-yw4l">Action item</th>
-  </tr>
-  <tr>
-    <td class="tg-yw4l">Nov 14</td>
-    <td class="tg-yw4l">Write code to implement object tracking for vehicles in front</td>
-  </tr>
-  <tr>
-    <td class="tg-yw4l">Nov 21</td>
-    <td class="tg-yw4l">Refine object tracking code to run faster</td>
-  </tr>
-  <tr>
-    <td class="tg-yw4l">Nov 28</td>
-    <td class="tg-yw4l">Write code for car detector to provide template to object tracker</td>
-  </tr>
-  <tr>
-    <td class="tg-yw4l">Dec 5</td>
-    <td class="tg-yw4l">Iron out bugs and integrate tracker and detector</td>
-  </tr>
-  <tr>
-    <td class="tg-yw4l">Dec 11</td>
-    <td class="tg-yw4l">UI/UX design</td>
-  </tr>
-</table>
+**Going Forward**
+Using this application as the technical foundation for tracking, I plan to implement the driving assistant application that I had initially set out to build. Here’s a list of features that I plan to include :
+- Support for iPhone 6(s) 240fps camera
+- Lane Departure Warnings
+- Maintain Safe Distance Warnings
+
+For more details, please refer to the Final Project Report (to be uploaded soon).
+
+**Citations**
+- [1] H. Alismail, B. Browning, and S. Lucey, “Bit-Planes: Dense Subpixel Alignment of Binary Descriptors.” ArXiV 2016
+- [2] T. Ojala, M. Pietikinen, and D. Harwood. A comparative study of texture measures with classification based on featured distributions. Pattern Recognition, 29:51?59, 1996. 1, 3
+- [3] S. Gauglitz, T. Hllerer, and M. Turk. Evaluation of Interest Point Detectors and Feature Descriptors for Visual Tracking. International Journal of Computer Vision, 94(3):335?360, 2011. 5, 7
